@@ -4,7 +4,7 @@ from PySide6.QtCore import QRect, QCoreApplication
 class Ui_Widget(object):
     def setupUi(self, Widget):
         Widget.setObjectName("Widget")
-        Widget.resize(400, 400)
+        Widget.resize(400, 450)
 
         self.scrollArea = QScrollArea(Widget)
         self.scrollArea.setGeometry(QRect(10, 10, 381, 231))
@@ -26,12 +26,17 @@ class Ui_Widget(object):
         self.pushButton2.setGeometry(QRect(10, 350, 381, 41))
         self.pushButton2.setObjectName("pushButton2")
 
+        self.pushButton3 = QPushButton(Widget)
+        self.pushButton3.setGeometry(QRect(10, 400, 381, 41))
+        self.pushButton3.setObjectName("pushButton3")
+
         self.retranslateUi(Widget)
         QCoreApplication.translate
 
     def retranslateUi(self, Widget):
         _translate = QCoreApplication.translate
         Widget.setWindowTitle(_translate("Widget", "Widget"))
-        self.pushButton.setText(_translate("Widget", "Open Folder"))
-        self.pushButton1.setText(_translate("Widget", "test"))
-        self.pushButton2.setText(_translate("Widget", "api"))
+        self.pushButton.setText(_translate("Widget", "Open local folder to scan"))
+        self.pushButton1.setText(_translate("Widget", "Open remote folder to scan"))
+        self.pushButton2.setText(_translate("Widget", "Api scan"))
+        self.pushButton3.setText(_translate("Widget", "Scan port"))

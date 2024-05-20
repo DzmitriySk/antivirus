@@ -3,12 +3,17 @@ import os
 from PySide6.QtWidgets import QApplication, QWidget, QPushButton, QFileDialog, QVBoxLayout, QLabel, QScrollArea
 from smb.SMBConnection import SMBConnection
 
+from fref import get_local_ip, get_gateway, get_mac_and_ips
 from ui_form import Ui_Widget
-import subprocess
 import sys
 import requests
-
-
+import socket
+import os
+import subprocess
+import nmap
+import socket
+import subprocess
+import re
 current_dir = os.path.dirname(__file__)
 
 SHA256_HASHES_pack1 = (current_dir + '\\hard_signatures\\SHA256-Hashes_pack1.txt')
@@ -27,6 +32,18 @@ class Widget(QWidget):
         self.ui.pushButton.clicked.connect(self.open_folder)
         self.ui.pushButton1.clicked.connect(self.open_folder)
         self.ui.pushButton2.clicked.connect(self.open_folder_api)
+        self.ui.pushButton3.clicked.connect(self.scan)
+
+    def scan(self):
+        local_ip = get_local_ip()
+        gateway = get_gateway()
+        devices = get_mac_and_ips(local_ip, gateway)
+
+        self.ui.verticalLayout.addWidget(QLabel(f"Local IP: {local_ip}"))
+        self.ui.verticalLayout.addWidget(QLabel(f"Gateway: {gateway}"))
+        self.ui.verticalLayout.addWidget(QLabel("Devices in network:"))
+        for device in devices:
+            self.ui.verticalLayout.addWidget(QLabel(f"IP: {device[0]}, MAC: {device[1]}"))
 
     def list_shared_resources(self, server_name, server_ip, username, password):
         conn = SMBConnection(username, password, '', server_name, use_ntlm_v2=True)
@@ -42,7 +59,7 @@ class Widget(QWidget):
                     for shared_file in shared_files:
                         shared_files_list.append(
                             (share.name,
-                             shared_file.filename))  # Добавляем кортеж (имя общего ресурса, имя файла) в список
+                             shared_file.filename))
             return shared_files_list
     @staticmethod
     def get_file_hash(file):
@@ -240,6 +257,30 @@ class Widget(QWidget):
                         error_label = QLabel(f"Error processing file {filename}: {e}")
                         self.ui.verticalLayout.addWidget(error_label)
                         print(f"Error processing file {filename}: {e}")
+
+    def scan_network():
+        # Получение локального IP-адреса
+        local_ip = socket.gethostbyname(socket.gethostname())
+        print(f"Локальный IP-адрес: {local_ip}")
+
+        # Получение шлюза
+        gateway = os.popen("ipconfig | findstr /i \"Default Gateway\"").read().split(":")[-1].strip()
+        print(f"Шлюз: {gateway}")
+
+        # Сканирование устройств в сети
+        try:
+            output = subprocess.check_output(["arp", "-a"]).decode("utf-8")
+            lines = output.split("\n")
+            for line in lines:
+                if "Interface" in line or "Internet Address" in line:
+                    continue
+                parts = line.split()
+                if len(parts) >= 2:
+                    ip_address = parts[0]
+                    mac_address = parts[1]
+                    print(f"Устройство: IP = {ip_address}, MAC = {mac_address}")
+        except subprocess.CalledProcessError:
+            print("Не удалось выполнить сканирование сети.")
 
     def clear_scroll_area(self):
         # Clear the scroll area
